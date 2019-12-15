@@ -55,8 +55,7 @@ function getSettings(event) {
         'modifier': safari.extension.settings.modifier,
         'scrollSize': safari.extension.settings.scrollSize,
         'excludedUrls': safari.extension.settings.excludedUrls,
-        'detectByCursorStyle': safari.extension.settings.detectByCursorStyle,
-        'showHelp': safari.extension.settings.showHelp
+        'detectByCursorStyle': safari.extension.settings.detectByCursorStyle
     };
 
     dispatchMessage(event.target, 'setSettings', settings);

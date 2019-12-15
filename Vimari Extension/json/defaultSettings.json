@@ -21,6 +21,5 @@
   "tabBack": "q",
   "closeTab": "x",
   "closeTabReverse": "shift+x",
-  "openTab": "t",
-  "showHelp": "?"
+  "openTab": "t"
 }

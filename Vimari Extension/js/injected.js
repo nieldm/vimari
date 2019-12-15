@@ -82,13 +82,7 @@ var actionMap = {
 		function() { window.scrollBy(0, document.body.scrollHeight); },
 
 	'goToPageTop':
-		function() { window.scrollBy(0, -document.body.scrollHeight); },
-
-    'showHelp':
-        function() { 
-            console.debug("Show Help");
-            safari.extension.dispatchMessage('showHelp'); 
-        }
+		function() { window.scrollBy(0, -document.body.scrollHeight); }
 };
 
 // Meant to be overridden, but still has to be copy/pasted from the original...
