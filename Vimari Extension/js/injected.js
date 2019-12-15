@@ -82,7 +82,13 @@ var actionMap = {
 		function() { window.scrollBy(0, document.body.scrollHeight); },
 
 	'goToPageTop':
-		function() { window.scrollBy(0, -document.body.scrollHeight); }
+		function() { window.scrollBy(0, -document.body.scrollHeight); },
+
+    'showHelp':
+        function() { 
+            console.debug("Show Help");
+            safari.extension.dispatchMessage('showHelp'); 
+        }
 };
 
 // Meant to be overridden, but still has to be copy/pasted from the original...
@@ -106,10 +112,15 @@ Mousetrap.stopCallback = function(e, element, combo) {
 };
 
 // Set up key codes to event handlers
-function bindKeyCodesToActions() {
+function bindKeyCodesToActions(settings) {
+    console.log("BindCode with settings ", settings);
+    var excludedUrl = false
+    if (typeof settings != "undefined") {
+        excludedUrl = isExcludedUrl(settings.excludedUrls, document.URL)
+    }
 	// Only add if topWindow... not iframe
-	if (topWindow && !isExcludedUrl(settings.excludedUrls, document.URL)) {
-		Mousetrap.reset();
+    Mousetrap.reset();
+	if (topWindow && !excludedUrl) {
 		Mousetrap.bind('esc', enterNormalMode);
 		Mousetrap.bind('ctrl+[', enterNormalMode);
 		Mousetrap.bind('i', enterInsertMode);
@@ -162,10 +173,13 @@ function unbindKeyCodes() {
 // Adds an optional modifier to the configured key code for the action
 function getKeyCode(actionName) {
 	var keyCode = '';
-	if(settings.modifier) {
-		keyCode += settings.modifier + '+';
-	}
-	return keyCode + settings[actionName];
+    if (typeof settings != 'undefined') {
+        if(settings.modifier) {
+            keyCode += settings.modifier + '+';
+        }
+        return keyCode + settings[actionName];
+    }
+	return keyCode;
 }
 
 
@@ -224,8 +238,9 @@ function handleMessage(msg) {
  * Callback to pass settings to injected script
  */
 function setSettings(msg) {
+    console.log("Settings", msg);
 	settings = msg;
-	bindKeyCodesToActions();
+	bindKeyCodesToActions(msg);
 }
 
 /*
@@ -244,15 +259,18 @@ function isExcludedUrl(storedExcludedUrls, currentUrl) {
 	if (!storedExcludedUrls.length) {
 		return false;
 	}
+    console.log("URL", storedExcludedUrls, currentUrl);
 
     var excludedUrls, regexp, url, formattedUrl, _i, _len;
     excludedUrls = storedExcludedUrls.split(",");
     for (_i = 0, _len = excludedUrls.length; _i < _len; _i++) {
         url = excludedUrls[_i];
         formattedUrl = stripProtocolAndWww(url);
-        formattedUrl = formattedUrl.toLowerCase();
+        formattedUrl = formattedUrl.toLowerCase().trim();
         regexp = new RegExp('((.*)?(' + formattedUrl + ')+(.*))');
+        console.debug(regexp, currentUrl);
         if (currentUrl.toLowerCase().match(regexp)) {
+            console.debug("Excluded!", currentUrl);
             return true;
         }
     }
@@ -277,13 +295,28 @@ function stripProtocolAndWww(url) {
   return url;
 }
 
-// Bootstrap extension
-setSettings(window.getSettings());
 // Add event listener
-// safari.self.addEventListener("message", handleMessage, false);
-// Retrieve settings
-// safari.self.tab.dispatchMessage('getSettings', '');
+function inIframe () {
+    try {
+        return window.self !== window.top;
+    }
+    catch (e) {
+        return true;
+    }
+}
 
+if(!inIframe()){
+    safari.self.addEventListener("message", messageHandler);
+    safari.extension.dispatchMessage("updateSettings");
+}
+
+function messageHandler(event){
+    console.log("Event", event);
+    if (event.name == "updateSettingsEvent") {
+        setSettings(event.message);
+    }
+}
+                                 
 // Export to make it testable
 window.isExcludedUrl = isExcludedUrl;
 window.stripProtocolAndWww = stripProtocolAndWww;

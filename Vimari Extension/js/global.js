@@ -55,7 +55,8 @@ function getSettings(event) {
         'modifier': safari.extension.settings.modifier,
         'scrollSize': safari.extension.settings.scrollSize,
         'excludedUrls': safari.extension.settings.excludedUrls,
-        'detectByCursorStyle': safari.extension.settings.detectByCursorStyle
+        'detectByCursorStyle': safari.extension.settings.detectByCursorStyle,
+        'showHelp': safari.extension.settings.showHelp
     };
 
     dispatchMessage(event.target, 'setSettings', settings);
@@ -153,3 +154,5 @@ safari.application.addEventListener('activate', function (event) {
     activateTab();
     getSettings(event);
 }, true);
+
+console.log("NOup");
